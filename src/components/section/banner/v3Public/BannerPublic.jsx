@@ -13,49 +13,59 @@ import bannerThumb1 from "../../../../assets/images/banner/Item1.png";
 import bannerThumb2 from "../../../../assets/images/banner/Item2.png";
 import bannerThumb3 from "../../../../assets/images/banner/Item3.png";
 import BannerStyleWrapper from "./Banner.style";
+import lib from "react-component-countdown-timer";
 const BannerPublic = () => {
   const { mintModalHandle } = useModal();
   const [count, setCount] = useState(1);
+  const [provider, setProvider] = useState();
+  const [library, setLibrary] = useState();
+  const [signer, setSigner] = useState();
+  const [connected, setConnected] = useState(false);
+  const [account, setAccount] = useState();
 
-  const Web3Modal = window.Web3Modal.default;
-  // const providerOptions = {
-  //   coinbasewallet: {
-  //     package: CoinbaseWalletSDK, // Required
-  //     options: {
-  //       appName: "TMC Mint", // Required
-  //       infuraId: "b3476aa6328d4b468b6256e95a7b3b33", // Required 'https://mainnet.infura.io/v3/b3476aa6328d4b468b6256e95a7b3b33'
-  //       // rpc: "", // Optional if `infuraId` is provided; otherwise it's required
-  //       chainId: 1, // Optional. It defaults to 1 if not provided
-  //       darkMode: false // Optional. Use dark theme, defaults to false
-  //     }
-  //   }
-  // }
-
-
-const providerOptions = {
- coinbasewallet: {
-   package: CoinbaseWalletSDK, 
-   options: {
-     appName: "Web 3 Modal Demo",
-     infuraId: "b3476aa6328d4b468b6256e95a7b3b33"
-   }
- },
- walletconnect: {
-   package: WalletConnect, 
-   options: {
-     infuraId: "b3476aa6328d4b468b6256e95a7b3b33"
-   }
- }
-};
-  
-
+  const providerOptions = {
+    coinbasewallet: {
+      package: CoinbaseWalletSDK, // Required
+      options: {
+        appName: "TMC Mint", // Required
+        infuraId: "b3476aa6328d4b468b6256e95a7b3b33", // Required 'https://mainnet.infura.io/v3/b3476aa6328d4b468b6256e95a7b3b33'
+        // rpc: "", // Optional if `infuraId` is provided; otherwise it's required
+        chainId: 1, // Optional. It defaults to 1 if not provided
+        darkMode: true // Optional. Use dark theme, defaults to false
+      }
+    },
+    walletconnect: {
+      package: WalletConnect, 
+      options: {
+          infuraId: "b3476aa6328d4b468b6256e95a7b3b33"
+      }
+    }
+  }
   const web3Modal = new Web3Modal({
-    network: "mainnet",
-    cacheProvider: true,
     providerOptions
   });
 
-  const provider = web3Modal.connect();
+  const connectWallet = async () => {
+    try{
+      const provider = await web3Modal.connect();
+      const library = new ethers.providers.Web3Provider(provider);
+      const signer = library.getSigner();
+      const accounts = await library.listAccounts();
+
+      if(accounts) {
+        setAccount(accounts[0]);
+      }
+
+      setProvider(provider);
+      setLibrary(library);
+      setSigner(signer);
+
+      console.log(signer);
+      setConnected(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
 
   return (
@@ -111,7 +121,10 @@ const providerOptions = {
                   </span>
                 </div>
                 <div className="bithu_v3_baner_buttons">
-                  <Button lg variant="mint" onClick={() => mintModalHandle()}>
+                  <Button lg variant="mint" hidden={connected === true} onClick={() => connectWallet()}>
+                    Connect Wallet
+                  </Button>
+                  <Button lg variant="mint" hidden={connected === false} onClick={() => connectWallet()}>
                     Mint Now
                   </Button>
                 </div>
@@ -122,6 +135,9 @@ const providerOptions = {
               </div>  
               <div className="banner-bottom-text text-uppercase"> {/*Diamond WL price 1.2 eth for 1, 1 eth for multiple, Diamond public 2.5 eth*/}
                 Diamond public 2.5 ETH
+              </div>
+              <div className="banner-bottom-text text-uppercase" hidden={connected === false}>
+                Connected to: { account }
               </div>
             </div>
           </div>

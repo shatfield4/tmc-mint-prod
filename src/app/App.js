@@ -7,7 +7,7 @@ function App() {
   return (
     <Routes>
       <Route path="/wl" element={<HomeWL />} exact />
-      <Route path="/public" element={<HomePublic />} />
+      <Route path="/" element={<HomePublic />} />
     </Routes>
   );
 }

@@ -39,17 +39,17 @@ const Header = () => {
           </div>
           <div className="bithu_menu_right_sect bithu_v1_menu_right_sect">
             <div className="bithu_menu_btns">
-              <Button sm variant="outline" className="join_btn">
+              {/* <Button sm variant="outline" className="join_btn">
                 <FaDiscord /> Join
-              </Button>
-              <Button
+              </Button> */}
+              {/* <Button
                 sm
                 variant="hovered"
                 className="connect_btn"
                 onClick={() => walletModalHandle()}
               >
                 <FaWallet /> Connect
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
