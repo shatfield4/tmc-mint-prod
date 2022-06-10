@@ -1,5 +1,5 @@
 # The Millionare Club - Hobotizen Mint Pages
-This react application is the mint page for public and whitelisted minters
+This react application contains the mint pages for public and whitelisted minters
 ## Available Scripts
 
 In the project directory, you can run:
