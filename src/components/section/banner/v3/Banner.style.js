@@ -1,5 +1,6 @@
 import styled, { keyframes } from "styled-components";
 import bannerBg from "../../../../assets/images/bg/banner_bg_3.jpg";
+import tmcBG from "../../../../assets/images/bg/TMCBG.png";
 
 const rotate = keyframes`
 from {
@@ -12,7 +13,7 @@ to {
 `;
 
 const BannerStyleWrapper = styled.section`
-  background: url(${bannerBg});
+  background: url(${tmcBG});
   width: 100%;
   background-size: cover;
   background-position: top center;

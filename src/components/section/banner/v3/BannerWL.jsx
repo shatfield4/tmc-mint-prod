@@ -9,6 +9,7 @@ import Particle from "../../../../common/particle/v2";
 import bannerThumb1 from "../../../../assets/images/banner/Item1.png";
 import bannerThumb2 from "../../../../assets/images/banner/Item2.png";
 import bannerThumb3 from "../../../../assets/images/banner/Item3.png";
+import cyclingGif from "../../../../assets/images/banner/cyclingGif.gif"
 import BannerStyleWrapper from "./Banner.style";
 const Banner = () => {
   const { mintModalHandle } = useModal();
@@ -35,13 +36,13 @@ const Banner = () => {
           <div className="col-lg-6">
             <div className="banner-image-area3">
               {/* particles component */}
-              <Particle />
+              {/* <Particle /> */}
               <img
                 className="banner-image banner-image1"
-                src={bannerThumb1}
+                src={cyclingGif}
                 alt="bithu banner thumb"
               />
-              <img
+              {/* <img
                 className="banner-image banner-image2"
                 src={bannerThumb2}
                 alt="bithu banner thumb"
@@ -49,8 +50,8 @@ const Banner = () => {
               <img
                 className="banner-image banner-image3"
                 src={bannerThumb3}
-                alt="bithu banner thumb"
-              />
+                alt="bithu banner thumb" */}
+              {/* /> */}
             </div>
           </div>
           <div className="col-lg-6">

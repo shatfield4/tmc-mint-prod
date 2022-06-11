@@ -3,9 +3,9 @@ import GlobalStyles from "../assets/styles/GlobalStyles";
 import Layout from "../common/layout";
 import Header from "../components/section/header/v1/Header";
 import BannerPublic from "../components/section/banner/v3Public";
-import CharacterSlider from "../components/section/characterSlider/v3";
 import MintNowModal from "../common/modal/mintNowModal" 
-import WalletModal from "../common/modal/walletModal/WalletModal" 
+import WalletModal from "../common/modal/walletModal/WalletModal"
+// import CharacterSlider from "../components/section/characterSlider/v3"; 
 const HomePublic = () => {
   const { visibility, walletModalvisibility } = useModal();
   return (
@@ -16,7 +16,7 @@ const HomePublic = () => {
       {walletModalvisibility && <WalletModal />}
         <Header />
         <BannerPublic />
-        <CharacterSlider />
+        {/* <CharacterSlider /> */}
       </Layout>
     </>
   );

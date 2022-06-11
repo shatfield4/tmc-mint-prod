@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { useModal } from "../../../../utils/ModalContext";
 import { ethers } from 'ethers';
+import { useEffect } from "react";
+import abi from '../../../../contracts/TMC.json'
 import Web3Modal from 'web3modal';
 import CoinbaseWalletSDK from '@coinbase/wallet-sdk';
 import WalletConnect from "@walletconnect/web3-provider";
-
+import truncateEthAddress from 'truncate-eth-address';
+import { toHex } from '../../../../utils/utils';
+import cyclingGif from "../../../../assets/images/banner/cyclingGif.gif"
 
 import Button from "../../../../common/button";
 import Particle from "../../../../common/particle/v2";
@@ -13,25 +16,64 @@ import bannerThumb1 from "../../../../assets/images/banner/Item1.png";
 import bannerThumb2 from "../../../../assets/images/banner/Item2.png";
 import bannerThumb3 from "../../../../assets/images/banner/Item3.png";
 import BannerStyleWrapper from "./Banner.style";
-import lib from "react-component-countdown-timer";
+
+
 const BannerPublic = () => {
-  const { mintModalHandle } = useModal();
   const [count, setCount] = useState(1);
   const [provider, setProvider] = useState();
   const [library, setLibrary] = useState();
-  const [signer, setSigner] = useState();
   const [connected, setConnected] = useState(false);
   const [account, setAccount] = useState();
+  const [tmcContract, setTmcContract] = useState();
+  const [truncAccount, setTruncAccount] = useState();
+  const [totalMinted, setTotalMinted] = useState('-');
+  const [chainId, setChainId] = useState(0x1);
 
+  const tmcContractAddress = "0x4E1b46867cE6Ff6e7F2dbB0cc74eA58c5aCF1F00";
+  const deployedChainId = 4; // 0x1 ETH Mainnet, 0x4 Rinkeby testnet
+  const publicPrice = 0.01;
+  const totalSupply = 410;
+
+  useEffect(() => {
+    if (provider?.on) {
+      const handleAccountsChanged = (accounts) => {
+        if (accounts) setAccount(accounts[0]);
+        disconnect();
+      };
+
+      const handleChainChanged = (_hexChainId) => {
+        setChainId(_hexChainId);
+        disconnect();
+      };
+
+      const handleDisconnect = () => {
+        console.log("disconnect");
+        disconnect();
+      };
+
+      provider.on("accountsChanged", handleAccountsChanged);
+      provider.on("chainChanged", handleChainChanged);
+      provider.on("disconnect", handleDisconnect);
+
+      return () => {
+        if (provider.removeListener) {
+          provider.removeListener("accountsChanged", handleAccountsChanged);
+          provider.removeListener("chainChanged", handleChainChanged);
+          provider.removeListener("disconnect", handleDisconnect);
+        }
+      };
+    }
+  }, [provider]);
+
+  // Provider options for Web3Modal
   const providerOptions = {
     coinbasewallet: {
-      package: CoinbaseWalletSDK, // Required
+      package: CoinbaseWalletSDK,
       options: {
-        appName: "TMC Mint", // Required
-        infuraId: "b3476aa6328d4b468b6256e95a7b3b33", // Required 'https://mainnet.infura.io/v3/b3476aa6328d4b468b6256e95a7b3b33'
-        // rpc: "", // Optional if `infuraId` is provided; otherwise it's required
-        chainId: 1, // Optional. It defaults to 1 if not provided
-        darkMode: true // Optional. Use dark theme, defaults to false
+        appName: "TMC Mint",
+        infuraId: "b3476aa6328d4b468b6256e95a7b3b33", // https://mainnet.infura.io/v3/b3476aa6328d4b468b6256e95a7b3b33
+        chainId: 1,
+        darkMode: true
       }
     },
     walletconnect: {
@@ -41,30 +83,90 @@ const BannerPublic = () => {
       }
     }
   }
+  // Instantiate the Web3Modal
   const web3Modal = new Web3Modal({
+    cacheProvider: true,
     providerOptions
   });
 
+  // If user has connected to site before, automatically connect their wallet
+  useEffect(() => {
+    if (web3Modal.cachedProvider) {
+      connectWallet();
+    }
+  }, []);
+
+  // Connect user to correct chain
+  const switchNetwork = async () => {
+    try {
+      library.provider.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: toHex(deployedChainId)}]
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  // Connects wallet when user presses connect wallet button
   const connectWallet = async () => {
     try{
       const provider = await web3Modal.connect();
       const library = new ethers.providers.Web3Provider(provider);
       const signer = library.getSigner();
+
+      await switchNetwork();
+
+      const tmcContract = new ethers.Contract(tmcContractAddress, abi, signer);
+
       const accounts = await library.listAccounts();
 
       if(accounts) {
         setAccount(accounts[0]);
+        setTruncAccount(truncateEthAddress(accounts[0]));
       }
 
       setProvider(provider);
       setLibrary(library);
-      setSigner(signer);
+      setTmcContract(tmcContract);
 
-      console.log(signer);
+      // Update total minted to display on site
+      setTotalMinted(ethers.utils.formatUnits(await tmcContract.totalSupply(), 0));
+      
+
       setConnected(true);
     } catch (error) {
       console.error(error);
     }
+  };
+
+  // Mint clicked handler function for minting for public sale
+  const mintDiamondPublic = async () => {
+    try {
+      let mintTx = await tmcContract.mintDiamond(count, { value: ethers.utils.parseEther((count * publicPrice).toString())});
+      await mintTx.wait();
+
+      alert(`Your mint transaction was successful: https://rinkeby.etherscan.io/tx/${mintTx.hash}`)
+      setTotalMinted(ethers.utils.formatUnits(await tmcContract.totalSupply(), 0));
+    } catch (err) {
+      if(err.toString().includes('insufficient')){
+        alert("You do not have enough ETH in your wallet to mint.");
+      }
+
+      if(err.toString().includes('denied trans')){
+        alert("You declined the mint transaction.")
+      }
+    }
+  }
+  
+  // Lets user disconnect wallet from site
+  const disconnect = async () => {
+    await web3Modal.clearCachedProvider();
+    setConnected(false);
+    setProvider("");
+    setLibrary("");
+    setTruncAccount("");
+    localStorage.clear();
   };
 
 
@@ -75,20 +177,9 @@ const BannerPublic = () => {
           <div className="col-lg-6">
             <div className="banner-image-area3">
               {/* particles component */}
-              <Particle />
               <img
                 className="banner-image banner-image1"
-                src={bannerThumb1}
-                alt="bithu banner thumb"
-              />
-              <img
-                className="banner-image banner-image2"
-                src={bannerThumb2}
-                alt="bithu banner thumb"
-              />
-              <img
-                className="banner-image banner-image3"
-                src={bannerThumb3}
+                src={cyclingGif}
                 alt="bithu banner thumb"
               />
             </div>
@@ -124,20 +215,25 @@ const BannerPublic = () => {
                   <Button lg variant="mint" hidden={connected === true} onClick={() => connectWallet()}>
                     Connect Wallet
                   </Button>
-                  <Button lg variant="mint" hidden={connected === false} onClick={() => connectWallet()}>
+                  <Button lg variant="mint" hidden={ connected === false } onClick={() => mintDiamondPublic()}>
                     Mint Now
                   </Button>
                 </div>
               </div>
               <div className="bithu_v3_timer">
                 <br></br><br></br>
-                <h5 className="text-uppercase">Total Cost: { count * 2.5 } Eth </h5>
+                <h5 className="text-uppercase">Total Cost: { count * publicPrice } Eth </h5>
               </div>  
+              <div className="banner-bottom-text text-uppercase">
+                Minted: { totalMinted }/{ totalSupply }
+              </div>
               <div className="banner-bottom-text text-uppercase"> {/*Diamond WL price 1.2 eth for 1, 1 eth for multiple, Diamond public 2.5 eth*/}
-                Diamond public 2.5 ETH
+                Diamond public { publicPrice.toString() } ETH
               </div>
               <div className="banner-bottom-text text-uppercase" hidden={connected === false}>
-                Connected to: { account }
+                <Button lg variant="mint" onClick={() => disconnect()}>
+                Connected to: { truncAccount }
+                  </Button>
               </div>
             </div>
           </div>
