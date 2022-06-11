@@ -10,11 +10,7 @@ import { toHex } from '../../../../utils/utils';
 import cyclingGif from "../../../../assets/images/banner/cyclingGif.gif"
 
 import Button from "../../../../common/button";
-import Particle from "../../../../common/particle/v2";
 
-import bannerThumb1 from "../../../../assets/images/banner/Item1.png";
-import bannerThumb2 from "../../../../assets/images/banner/Item2.png";
-import bannerThumb3 from "../../../../assets/images/banner/Item3.png";
 import BannerStyleWrapper from "./Banner.style";
 
 
@@ -47,7 +43,6 @@ const BannerPublic = () => {
       };
 
       const handleDisconnect = () => {
-        console.log("disconnect");
         disconnect();
       };
 

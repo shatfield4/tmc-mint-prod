@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.js": "/static/js/main.3b0d50ae.js",
+    "static/media/TMCBG.png": "/static/media/TMCBG.e2cede90933c4f846a86.png",
+    "static/media/cyclingGif.gif": "/static/media/cyclingGif.5786f7bf3528066c7031.gif",
+    "static/media/modal2_overlay.png": "/static/media/modal2_overlay.2528f8d778c5e7c2b2fa.png",
+    "static/media/modal_overlay.png": "/static/media/modal_overlay.4e7ba8356b1049906c45.png",
+    "static/media/logo.png": "/static/media/logo.c2ee60aa6574caaeb7b0.png",
+    "static/media/mint-img.png": "/static/media/mint-img.513536114cd9adc5af24.png",
+    "static/media/fav_icon.ico": "/static/media/fav_icon.3ba8120fde1d38326502.ico",
+    "static/media/MetaMask.svg": "/static/media/MetaMask.8bcca7d808b8f3b5cdb99e38626c11b8.svg",
+    "static/media/opensea.svg": "/static/media/opensea.bb5ecc8e9331bbe98f033d3604f01f48.svg",
+    "static/media/Trust_Wallet.svg": "/static/media/Trust_Wallet.2bc7697d94107d5392b04bf026fd963c.svg",
+    "static/media/WalletConnect.svg": "/static/media/WalletConnect.d0813aa73028f2dd03895f218d0e254a.svg",
+    "index.html": "/index.html",
+    "static/media/Formatic.svg": "/static/media/Formatic.50ecf78009ec760514e1807c67ce696b.svg",
+    "static/media/button-hover-shape.svg": "/static/media/button-hover-shape.f2ab9dd7826838eb77a01cbe82c988f2.svg",
+    "static/media/hov_shape_L.svg": "/static/media/hov_shape_L.e16f0a5e4f681f2815a0f85b5f12605d.svg",
+    "static/media/hov_shape_s.svg": "/static/media/hov_shape_s.ab94770525c55314d81a2a8fbe129601.svg",
+    "main.3b0d50ae.js.map": "/static/js/main.3b0d50ae.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.3b0d50ae.js"
+  ]
+}

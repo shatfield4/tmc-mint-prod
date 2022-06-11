@@ -1,5 +1,4 @@
 import styled, { keyframes } from "styled-components";
-import bannerBg from "../../../../assets/images/bg/banner_bg_3.jpg";
 import tmcBG from "../../../../assets/images/bg/TMCBG.png";
 
 const rotate = keyframes`
@@ -34,11 +33,11 @@ const BannerStyleWrapper = styled.section`
   .banner-image-area3 {
     position: relative;
     padding: 110px 0;
-    z-index: 3;
+    z-index: 0;
 
     .banner-image1 {
       position: relative;
-      z-index: 3;
+      z-index: 0;
       top: -25px;
     }
 
