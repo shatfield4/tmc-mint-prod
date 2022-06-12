@@ -29,7 +29,7 @@ const Header = () => {
         <div className="bithu_menu_sect">
           <div className="bithu_menu_left_sect">
             <div className="logo">
-              <a href="/">
+              <a href="https://tmcnft.io">
                 <img src={logo} alt="bithu nft logo" />
               </a>
             </div>

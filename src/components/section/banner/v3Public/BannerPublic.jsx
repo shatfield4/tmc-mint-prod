@@ -24,11 +24,13 @@ const BannerPublic = () => {
   const [truncAccount, setTruncAccount] = useState();
   const [totalMinted, setTotalMinted] = useState('-');
   const [chainId, setChainId] = useState(0x1);
+  const [publicPrice, setPublicPrice] = useState(2.5);
+  const [totalSupply, setTotalSupply] = useState(410);
 
-  const tmcContractAddress = "0x4E1b46867cE6Ff6e7F2dbB0cc74eA58c5aCF1F00";
+
+  const tmcContractAddress = "0xfFd1684a921C5519bE794e1F2AEb42B6e48794f8";
   const deployedChainId = 4; // 0x1 ETH Mainnet, 0x4 Rinkeby testnet
-  const publicPrice = 0.01;
-  const totalSupply = 410;
+
 
   useEffect(() => {
     if (provider?.on) {
@@ -127,6 +129,8 @@ const BannerPublic = () => {
 
       // Update total minted to display on site
       setTotalMinted(ethers.utils.formatUnits(await tmcContract.totalSupply(), 0));
+      // Update current mint price
+      setPublicPrice(ethers.utils.formatEther(await tmcContract.diamondPublicPrice()));
       
 
       setConnected(true);
@@ -141,7 +145,7 @@ const BannerPublic = () => {
       let mintTx = await tmcContract.mintDiamond(count, { value: ethers.utils.parseEther((count * publicPrice).toString())});
       await mintTx.wait();
 
-      alert(`Your mint transaction was successful: https://rinkeby.etherscan.io/tx/${mintTx.hash}`)
+      alert(`Your mint transaction was successful: https://etherscan.io/tx/${mintTx.hash}`)
       setTotalMinted(ethers.utils.formatUnits(await tmcContract.totalSupply(), 0));
     } catch (err) {
       if(err.toString().includes('insufficient')){
@@ -217,13 +221,13 @@ const BannerPublic = () => {
               </div>
               <div className="bithu_v3_timer">
                 <br></br><br></br>
-                <h5 className="text-uppercase">Total Cost: { count * publicPrice } Eth </h5>
+                <h5 className="text-uppercase">Total Cost: { count * publicPrice } Eth + gas</h5>
               </div>  
               <div className="banner-bottom-text text-uppercase">
                 Minted: { totalMinted }/{ totalSupply }
               </div>
               <div className="banner-bottom-text text-uppercase"> {/*Diamond WL price 1.2 eth for 1, 1 eth for multiple, Diamond public 2.5 eth*/}
-                Diamond public { publicPrice.toString() } ETH
+                Diamond tier public <br></br>{ (publicPrice).toString() } ETH each + gas
               </div>
               <div className="banner-bottom-text text-uppercase" hidden={connected === false}>
                 <Button lg variant="mint" onClick={() => disconnect()}>

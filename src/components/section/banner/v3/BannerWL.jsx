@@ -7,6 +7,8 @@ import CoinbaseWalletSDK from '@coinbase/wallet-sdk';
 import WalletConnect from "@walletconnect/web3-provider";
 import truncateEthAddress from 'truncate-eth-address';
 import { toHex } from '../../../../utils/utils';
+// import wlJson from '../../../../whitelist/whitelist.json';
+
 
 import CountdownTimer from "react-component-countdown-timer";
 
@@ -26,11 +28,14 @@ const Banner = () => {
   const [totalMinted, setTotalMinted] = useState('-');
   const [chainId, setChainId] = useState(0x1);
 
-  const tmcContractAddress = "0x4E1b46867cE6Ff6e7F2dbB0cc74eA58c5aCF1F00";
+  const [wlPriceFirst, setWLPriceFirst] = useState(1.2);
+  const [wlPriceMultiple, setWLPriceMultiple] = useState(1);
+  const [totalSupply, setTotalSupply] = useState(410);
+
+  const tmcContractAddress = "0xfFd1684a921C5519bE794e1F2AEb42B6e48794f8";
   const deployedChainId = 4; // 0x1 ETH Mainnet, 0x4 Rinkeby testnet
-  const wlPriceFirst = .01;
-  const wlPriceMultiple = 1;
-  const totalSupply = 410;
+
+  var whitelist = require('../../../../whitelist/whitelist.json');
 
   // Settings for timer
   const settings = {
@@ -46,6 +51,35 @@ const Banner = () => {
     id: "countdownwrap",
   };
 
+  useEffect(() => {
+    if (provider?.on) {
+      const handleAccountsChanged = (accounts) => {
+        if (accounts) setAccount(accounts[0]);
+        disconnect();
+      };
+
+      const handleChainChanged = (_hexChainId) => {
+        setChainId(_hexChainId);
+        disconnect();
+      };
+
+      const handleDisconnect = () => {
+        disconnect();
+      };
+
+      provider.on("accountsChanged", handleAccountsChanged);
+      provider.on("chainChanged", handleChainChanged);
+      provider.on("disconnect", handleDisconnect);
+
+      return () => {
+        if (provider.removeListener) {
+          provider.removeListener("accountsChanged", handleAccountsChanged);
+          provider.removeListener("chainChanged", handleChainChanged);
+          provider.removeListener("disconnect", handleDisconnect);
+        }
+      };
+    }
+  }, [provider]);
   // Provider options for Web3Modal
   const providerOptions = {
     coinbasewallet: {
@@ -113,6 +147,10 @@ const Banner = () => {
 
       // Update total minted to display on site
       setTotalMinted(ethers.utils.formatUnits(await tmcContract.totalSupply(), 0));
+      // Update first WL price
+      setWLPriceFirst(ethers.utils.formatEther(await tmcContract.diamondWLPrice()));
+      // Update multiple WL price
+      setWLPriceMultiple(ethers.utils.formatEther(await tmcContract.diamondWLPriceMultiple()));
       
 
       setConnected(true);
@@ -140,8 +178,38 @@ const Banner = () => {
       }
     }
 
-    // Mint clicked handeler function for whitelisted mint
+    // Mint clicked handler function for whitelisted mint
     const mintWL = async () => {
+      // Check if user is whitelisted
+      let foundWallet = false
+      let proof;
+
+      for(let i = 0; i <= whitelist.length - 1; i++) {
+        if(account.toString().toLowerCase() === whitelist[i].Address.toString().toLowerCase())
+        {
+          proof = whitelist[i].Proof;
+          foundWallet = true;
+        }
+      }
+
+      if(foundWallet === true) {
+        try {
+          let mintTx = await tmcContract.mintDiamondWL(count, 1, proof, { value: ethers.utils.parseEther((count < 2 ? count * wlPriceFirst : count * wlPriceMultiple).toString()) });
+          await mintTx.wait();
+          alert(`Your mint transaction was successful: https://etherscan.io/tx/${mintTx.hash}`)
+          setTotalMinted(ethers.utils.formatUnits(await tmcContract.totalSupply(), 0));
+
+        } catch (err) {
+          if(err.toString().includes('insufficient')){
+            alert("You do not have enough ETH in your wallet to mint.");
+          }
+          if(err.toString().includes('will exceed')){
+            alert("You will exceed the max amount per wallet for the WL mint.");
+          }
+        }
+      } else if (foundWallet === false) {
+        alert("Your wallet is not whitelisted.");
+      }
 
     }
     
@@ -175,13 +243,13 @@ const Banner = () => {
               <h4 className="banner-subtitle text-uppercase">
                 Whitelist : <span className="red-color">Live</span>
               </h4>
-              <h1 className="banner-title text-uppercase">Mint is live now</h1>
-              <div className="bithu_v3_timer">
+              <h1 className="banner-title text-uppercase">Diamond WL Mint is live now</h1>
+              {/* <div className="bithu_v3_timer">
                 <h5 className="text-uppercase">Whitelist Mint ends in</h5>
                 <div className="timer timer_1">
                   <CountdownTimer {...settings} />
                 </div>
-              </div>
+              </div> */}
               <div className="banner-count-inner d-flex align-items-center">
                 <div className="banner-btn-area">
                   <span
@@ -207,20 +275,20 @@ const Banner = () => {
                 <Button lg variant="mint" hidden={connected === true} onClick={() => connectWallet()}>
                     Connect Wallet
                   </Button>
-                  <Button lg variant="mint" hidden={ connected === false } onClick={() => mintDiamondPublic()}>
+                  <Button lg variant="mint" hidden={ connected === false } onClick={() => mintWL()}>
                     Mint Now
                   </Button>
                 </div>
               </div>
               <div className="bithu_v3_timer">
                 <br></br><br></br>
-                <h5 className="text-uppercase">Total Cost: { count < 2 ? count * wlPriceFirst : count * wlPriceMultiple } Eth </h5>
+                <h5 className="text-uppercase">Total Cost: { count < 2 ? count * wlPriceFirst : count * wlPriceMultiple } Eth + gas</h5>
               </div>  
               <div className="banner-bottom-text text-uppercase">
                 Minted: { totalMinted }/{ totalSupply }
               </div>
               <div className="banner-bottom-text text-uppercase"> {/*Diamond WL price 1.2 eth for 1, 1 eth for multiple, Diamond public 2.5 eth*/}
-                Diamond WL {wlPriceFirst.toString()} Eth for 1 <br></br>{wlPriceMultiple.toString()} Eth Multiple
+                Single Diamond {wlPriceFirst.toString()} Eth<br></br>{wlPriceMultiple.toString()} Eth Multiple
               </div>
               <div className="banner-bottom-text text-uppercase" hidden={connected === false}>
                 <Button lg variant="mint" onClick={() => disconnect()}>
